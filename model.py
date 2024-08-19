@@ -23,7 +23,9 @@ class InputEmbeddings(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
-
+    """
+    Class for positional encoding.
+    """
     def __init__(self, d_model: int, seq_len: int, dropout: float):
         """
         Args:
@@ -57,3 +59,26 @@ class PositionalEncoding(nn.Module):
         x = x + (self.pe[:, :x.shape[1], :]).requires_grad_(False)
         return self.dropout(x)
 
+
+class LayerNormalization(nn.Module):
+    """
+    Class for layer normalization.
+    """
+    def __init__(self, eps: float=1e-6):
+        """
+        Args:
+            eps: float, epsilon value for numerical stability.
+        """
+        super().__init__()
+        self.eps = eps
+        self.gamma = nn.Parameter(torch.ones(1)) # Multiplied 
+        self.beta = nn.Parameter(torch.zeros(1)) # Added
+
+    def forward(self, x):
+        """
+        Args:
+            x: Tensor, shape (batch_size, seq_len, d_model)
+        """
+        mean = x.mean(dim=-1, keepdim=True)
+        std = x.std(dim=-1, keepdim=True)
+        return self.gamma * (x - mean) / (std + self.eps) + self.beta
